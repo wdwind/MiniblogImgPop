@@ -52,9 +52,10 @@
       bFrag: 'large'
     },
     'weibo.com': {
-      feedSelector: '.bigcursor, .feed_img, .media_list img, .woo-picture-main img, .wbpro-feed-ogText a, .text a, .woo-avatar-main img',
+      feedSelector: '.bigcursor, .feed_img, .media_list img, .woo-picture-main img, .woo-avatar-main img, .woo-picture-slot img, video[class^="picture_vertVideoImage"], video[class^="picture_horiVideoImage"], .woo-picture-img',
+      masks: '.woo-picture-slot, .woo-picture-img',
       sFrag: ['thumb180', 'thumb150', 'orj480', 'orj360', 'thumbnail', 'square'],
-      bFrag: ['mw690', 'mw690', 'mw690', 'mw690', 'bmiddle', 'bmiddle']
+      bFrag: ['mw690', 'mw690', 'large', 'large', 'bmiddle', 'bmiddle']
     },
     't.sohu.com': {
       feedSelector: '.pic',
@@ -147,6 +148,11 @@
       var that = this;
       var smallImg = MiniblogImgPop.smallImg;
       var src = this.getBigImgsrc(smallImg);
+
+      if (src.indexOf('data:image/svg+xml') != -1) {
+        return;
+      }
+
       this.img.src = src;
       this.imgWidth = 500;
 
@@ -241,10 +247,8 @@
     },
 
     getBigImgsrc: function (obj) {
-      var tempimgs, tempimg, imgsrc, i, l,
-        sname = MiniblogImgPop.sitename,
-        config = MiniblogImgPop.config;
-      if (obj.tagName === 'IMG' || obj.tagName === 'img') {
+      var tempimgs, tempimg, imgsrc, i, l, config = MiniblogImgPop.config;
+      if (obj.tagName.toLowerCase() === 'img' || obj.tagName.toLowerCase() === 'video') {
         tempimg = obj;
       } else {
         tempimgs = obj.getElementsByTagName('IMG');
@@ -261,9 +265,14 @@
         return tempimg.getAttribute(config.bigSrc) || 'javascript:;';
       }
 
-      //一般处理
-      imgsrc = tempimg.getAttribute('src');
-      //console.info(imgsrc);
+      if (obj.tagName.toLowerCase() === 'video') {
+        // 针对微博gif
+        imgsrc = tempimg.getAttribute('poster');
+      } else {
+        //一般处理
+        imgsrc = tempimg.getAttribute('src');
+      }
+      
       imgsrc = decodeURIComponent(imgsrc);
       if (typeof config.sFrag === 'object') {
         for (i = 0, l = config.sFrag.length; i < l; i++) {
@@ -374,9 +383,18 @@
         node.style.opacity = '';
         PopImg.hide();
       }, this.config.feedSelector);
+      delegate(document.body, 'mousedown', function (e, node) {
+        node.style.opacity = '';
+        PopImg.hide();
+      }, this.config.feedSelector);
       delegate(document.body, 'mousemove', function (e) {
         PopImg.move(e);
       }, this.config.feedSelector);
+      // delegate(document.body, 'mouseover', function (e, node) {
+      //   if (node.querySelectorAll('img').length == 0) {
+      //       node.parentNode.removeChild(node);
+      //   }
+      // }, this.config.masks);
     },
 
     // 获得当前站点名
@@ -415,17 +433,14 @@
   }
 
   function offset(source) {
+    // Fix for offset in weibo
+    // https://stackoverflow.com/a/50310297
     var pt = {
-      x: 0,
-      y: 0,
-      width: source.offsetWidth,
-      height: source.offsetHeight
+      x: window.pageXOffset + source.parentNode.getBoundingClientRect().left,
+      y: window.pageYOffset + source.parentNode.getBoundingClientRect().top,
+      width: source.offsetWidth < source.parentNode.offsetWidth ? source.offsetWidth : source.parentNode.offsetWidth,
+      height: source.offsetHeight < source.parentNode.offsetHeight ? source.offsetHeight : source.parentNode.offsetHeight,
     };
-    do {
-      pt.x += source.offsetLeft;
-      pt.y += source.offsetTop;
-      source = source.offsetParent;
-    } while (source);
     return pt;
   }
 
