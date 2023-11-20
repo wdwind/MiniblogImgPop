@@ -154,7 +154,7 @@
       }
 
       this.img.src = src;
-      this.imgWidth = 500;
+      this.imgWidth = 700;
 
       imgReady(src, function () {
         that.imgWidth = this.width;
@@ -166,11 +166,11 @@
         Mask.show(e);
 
         // 换算图片显示高度
-        //  1. 宽度超过 500 时，高度要等比例压缩
+        //  1. 宽度超过 700 时，高度要等比例压缩
         //  2. 加上边框高度
         var imgDisplayHeight;
-        if (this.width > 500) {
-          imgDisplayHeight = (this.height) * 500 / this.width;
+        if (this.width > 700) {
+          imgDisplayHeight = (this.height) * 700 / this.width;
         } else {
           imgDisplayHeight = this.height;
         }
@@ -190,7 +190,7 @@
     layoutImg: function (e) {
       var pos = offset(MiniblogImgPop.smallImg);
       var left = pos.x + pos.width + 30;
-      var width = Math.min(this.imgWidth, 500);
+      var width = Math.min(this.imgWidth, 700);
       // 如果小图右边放不下
       if (left + width > window.innerWidth) {
         left = pos.x - width - 30;
@@ -595,7 +595,7 @@
     margin-top: 0;\
     position: absolute;\
     visibility: hidden;\
-    max-width: 500px;\
+    max-width: 700px;\
     transition: opacity 0.2s ease-out 0s, margin-top 0.2s ease-out 0s;\
   }\
   ");
